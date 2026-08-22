@@ -1,0 +1,31 @@
+name: datamining-mariadb
+
+services:
+  mariadb:
+    image: mariadb:11.4
+    container_name: mariadb
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MARIADB_ROOT_PASSWORD: "SenhaRootForte123"
+      MARIADB_DATABASE: "appdb"
+      MARIADB_USER: "appuser"
+      MARIADB_PASSWORD: "SenhaAppForte123"
+      TZ: "America/Sao_Paulo"
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --max_connections=200
+    volumes:
+      - mariadb_data_clean:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mariadb-admin ping -h 127.0.0.1 -u root -p$${MARIADB_ROOT_PASSWORD} --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+volumes:
+  mariadb_data_clean:
+    external: true
