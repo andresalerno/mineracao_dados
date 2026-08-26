@@ -561,3 +561,22 @@ Eu rodei aqui:
 ```powershell
 (datamining) salerno@salerno:~/miniforge3$ python -m Orange.canvas
 ```
+
+```powershell
+sudo docker exec -it mariadb mariadb -uappuser -pSenhaAppForte123 -e "SHOW DATABASES;"
+```
+
+```powershell
+sudo docker exec -it mariadb mariadb -h127.0.0.1 -uroot -pSenhaRootForte123
+```
+
+```powershell
+Copy-Item ".\base-datos-clientes.xlsx" "\\wsl$\Ubuntu\home\salerno\workspace\exercicios\"
+```
+
+```
+cd /home/salerno/workspace/exercicios
+sudo docker rm -f mariadb
+sudo docker compose up -d
+sudo docker compose ps
+sudo docker compose logs -f mariadb

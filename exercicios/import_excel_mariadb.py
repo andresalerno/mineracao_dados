@@ -18,6 +18,15 @@ SHEET_TO_TABLE = {
     "historico-compras": "historico_compras",
 }
 
+GESTAO_ACADEMICA_SHEET_TO_TABLE = {
+    "Alunos": "academico_alunos",
+    "Cursos": "academico_cursos",
+    "Disciplinas": "academico_disciplinas",
+    "Matriculas": "academico_matriculas",
+}
+
+KNOWN_MAPPINGS = [SHEET_TO_TABLE, GESTAO_ACADEMICA_SHEET_TO_TABLE]
+
 
 def normalize_column_name(name: str) -> str:
     ascii_name = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode("ascii")
@@ -83,10 +92,15 @@ def main() -> None:
         raise FileNotFoundError(f"Arquivo nao encontrado: {excel_path}")
 
     workbook = pd.ExcelFile(excel_path)
-    missing = [name for name in SHEET_TO_TABLE if name not in workbook.sheet_names]
-    if missing:
-        missing_text = ", ".join(missing)
-        raise ValueError(f"Abas obrigatorias nao encontradas: {missing_text}")
+    # Escolhe o mapeamento cujas abas todas existem no arquivo informado.
+    sheet_to_table = next(
+        (mapping for mapping in KNOWN_MAPPINGS if all(name in workbook.sheet_names for name in mapping)),
+        None,
+    )
+    if sheet_to_table is None:
+        raise ValueError(
+            f"Nenhum mapeamento conhecido corresponde as abas do arquivo: {workbook.sheet_names}"
+        )
 
     connection_url = (
         f"mysql+pymysql://{args.user}:{args.password}@{args.host}:{args.port}/{args.database}"
@@ -97,7 +111,7 @@ def main() -> None:
     print(f"Arquivo: {excel_path}")
     print(f"Banco: {args.database}")
 
-    for sheet_name, table_name in SHEET_TO_TABLE.items():
+    for sheet_name, table_name in sheet_to_table.items():
         df = pd.read_excel(excel_path, sheet_name=sheet_name, header=args.header)
 
         # Normaliza colunas para nomes SQL previsiveis.
